@@ -23,10 +23,12 @@ impl MainState{
     // world.register::<Target>();
     world.register::<ControllerComponent>();
     world.register::<HumanViewComponent>();
+    world.register::<RotationComponent>();
     // world.register::<ViewComponent<Player>>();
 
     world.create_entity()
       .with(Position{x: 100.0, y: 100.0})
+      .with(RotationComponent(0.0))
       .with(HumanViewComponent::new(ctx))
       .with(ControllerComponent{
         movingLeft: false,
@@ -52,12 +54,21 @@ impl MainState{
 
 use specs::Join;
 impl event::EventHandler for MainState {
+  fn mouse_motion_event(&mut self, _ctx: &mut Context, _x: f32, _y: f32, _dx: f32, _dy: f32){
+    let controllers = self.world.read_storage::<ControllerComponent>();
+    let mut rotations = self.world.write_storage::<RotationComponent>();
+
+    for (controller, rotation) in (&controllers, &mut rotations).join(){
+      rotation.0 += _dx / 100.0;
+      // rotation.0 += _dy;
+    }
+  }
+
   fn key_down_event( &mut self,
     ctx: &mut Context,
     keycode: KeyCode,
     keymod: KeyMods,
     repeat: bool){
-      println!("{:?}, {:?}, {}", keycode, keymod, repeat);
       let mut controllers = self.world.write_storage::<ControllerComponent>();
       for controller in (&mut controllers).join(){
         let state = true;
@@ -99,16 +110,25 @@ impl event::EventHandler for MainState {
 
     let view_comp = self.world.read_storage::<HumanViewComponent>();
     let position_comp = self.world.read_storage::<Position>();
+    let rotations = self.world.read_storage::<RotationComponent>();
     
     graphics::clear(ctx, graphics::BLACK);
 
     let count = (&view_comp, &position_comp).join().count();
-   
-    for (view, position) in (&view_comp, &position_comp).join() {
+    let offset = Point2::new(0.25, 0.5);
+    for (view, position, rotation) in (&view_comp, &position_comp, &rotations).join() {
+      let params = graphics::DrawParam::new();
+      params.rotation(1.1);
+      
       graphics::draw(
         ctx,
         &view.mesh,
-        (Point2::new(position.x, position.y),),
+        (
+          Point2::new(position.x, position.y),
+          rotation.0,
+          offset,
+          graphics::WHITE
+        ),
       ).unwrap();
     }
 
