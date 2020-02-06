@@ -60,33 +60,38 @@ impl event::EventHandler for MainState {
 
     for (controller, rotation) in (&controllers, &mut rotations).join(){
       rotation.0 += _dx / 100.0;
+      rotation.0 += _dy / 100.0;
       // rotation.0 += _dy;
     }
   }
 
-  fn key_down_event( &mut self,
-    ctx: &mut Context,
-    keycode: KeyCode,
-    keymod: KeyMods,
-    repeat: bool){
-      let mut controllers = self.world.write_storage::<ControllerComponent>();
-      for controller in (&mut controllers).join(){
-        let state = true;
-        match keycode {
-          KeyCode::D => controller.movingRight = state,
-          KeyCode::A => controller.movingLeft = state,
-          KeyCode::W => controller.movingUp = state,
-          KeyCode::S => controller.movingDown = state,
-          _ => ()
-        }
-      }
-  }
+  // fn key_down_event( &mut self,
+  //   ctx: &mut Context,
+  //   keycode: KeyCode,
+  //   keymod: KeyMods,
+  //   repeat: bool){
+  //     let mut controllers = self.world.write_storage::<ControllerComponent>();
+  //     for controller in (&mut controllers).join(){
+  //       let state = true;
+  //       match keycode {
+  //         KeyCode::D => controller.movingRight = state,
+  //         KeyCode::A => controller.movingLeft = state,
+  //         KeyCode::W => controller.movingUp = state,
+  //         KeyCode::S => controller.movingDown = state,
+  //         _ => ()
+  //       }
+  //     }
+  // }
 
   fn key_up_event( &mut self,
     ctx: &mut Context,
     keycode: KeyCode,
     keymod: KeyMods){
       let mut controllers = self.world.write_storage::<ControllerComponent>();
+      if keycode == KeyCode::Escape {
+        event::quit(ctx);
+      }
+
       for controller in (&mut controllers).join(){
         let state = false;
         match keycode {
