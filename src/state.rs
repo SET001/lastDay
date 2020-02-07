@@ -33,8 +33,8 @@ impl MainState{
       .with(ControllerComponent{
         movingLeft: false,
         movingRight: false,
-        movingUp: false,
-        movingDown: false,
+        movingForward: false,
+        movingBackward: false,
       })
       .build();
 
@@ -57,31 +57,30 @@ impl event::EventHandler for MainState {
   fn mouse_motion_event(&mut self, _ctx: &mut Context, _x: f32, _y: f32, _dx: f32, _dy: f32){
     let controllers = self.world.read_storage::<ControllerComponent>();
     let mut rotations = self.world.write_storage::<RotationComponent>();
+    let positions = self.world.write_storage::<Position>();
 
-    for (controller, rotation) in (&controllers, &mut rotations).join(){
-      rotation.0 += _dx / 100.0;
-      rotation.0 += _dy / 100.0;
-      // rotation.0 += _dy;
+    for (controller, rotation, position) in (&controllers, &mut rotations, &positions).join(){
+      rotation.0 = (_y - position.y).atan2(_x - position.x);
     }
   }
 
-  // fn key_down_event( &mut self,
-  //   ctx: &mut Context,
-  //   keycode: KeyCode,
-  //   keymod: KeyMods,
-  //   repeat: bool){
-  //     let mut controllers = self.world.write_storage::<ControllerComponent>();
-  //     for controller in (&mut controllers).join(){
-  //       let state = true;
-  //       match keycode {
-  //         KeyCode::D => controller.movingRight = state,
-  //         KeyCode::A => controller.movingLeft = state,
-  //         KeyCode::W => controller.movingUp = state,
-  //         KeyCode::S => controller.movingDown = state,
-  //         _ => ()
-  //       }
-  //     }
-  // }
+  fn key_down_event( &mut self,
+    ctx: &mut Context,
+    keycode: KeyCode,
+    keymod: KeyMods,
+    repeat: bool){
+      let mut controllers = self.world.write_storage::<ControllerComponent>();
+      for controller in (&mut controllers).join(){
+        let state = true;
+        match keycode {
+          KeyCode::D => controller.movingRight = state,
+          KeyCode::A => controller.movingLeft = state,
+          KeyCode::W => controller.movingForward = state,
+          KeyCode::S => controller.movingBackward = state,
+          _ => ()
+        }
+      }
+  }
 
   fn key_up_event( &mut self,
     ctx: &mut Context,
@@ -97,8 +96,8 @@ impl event::EventHandler for MainState {
         match keycode {
           KeyCode::D => controller.movingRight = state,
           KeyCode::A => controller.movingLeft = state,
-          KeyCode::W => controller.movingUp = state,
-          KeyCode::S => controller.movingDown = state,
+          KeyCode::W => controller.movingForward = state,
+          KeyCode::S => controller.movingBackward = state,
           _ => ()
         }
       }

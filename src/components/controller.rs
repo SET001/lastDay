@@ -5,6 +5,6 @@ use specs::{Component, VecStorage};
 pub struct ControllerComponent{
   pub movingLeft: bool,
   pub movingRight: bool,
-  pub movingUp: bool,
-  pub movingDown: bool,
+  pub movingForward: bool,
+  pub movingBackward: bool,
 }
