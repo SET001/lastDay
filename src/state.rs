@@ -123,15 +123,17 @@ impl event::EventHandler for MainState {
     // self.world.maintain();
     let mut view_comp = self.world.write_storage::<ViewComponent>();
     for (view) in (&mut view_comp).join() {
-      match view.viewType{
-        Views::Human => {
-          let image = graphics::Image::new(ctx, "/player.png").unwrap();
-          view.meshes.push(image);
-        },
-        Views::Zombie => {
-          let image = graphics::Image::new(ctx, "/zombie.png").unwrap();
-          view.meshes.push(image);
-        },
+      if view.meshes.len() < 1 {
+        match view.viewType{
+          Views::Human => {
+            let image = graphics::Image::new(ctx, "/player.png").unwrap();
+            view.meshes.push(image);
+          },
+          Views::Zombie => {
+            let image = graphics::Image::new(ctx, "/zombie.png").unwrap();
+            view.meshes.push(image);
+          }
+        }
       }
     }
 		Ok(())
