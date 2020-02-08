@@ -22,14 +22,27 @@ impl MainState{
     // world.register::<Velocity>();
     // world.register::<Target>();
     world.register::<ControllerComponent>();
-    world.register::<HumanViewComponent>();
     world.register::<RotationComponent>();
+    world.register::<ViewComponent>();
+    
     // world.register::<ViewComponent<Player>>();
 
     world.create_entity()
-      .with(Position{x: 100.0, y: 100.0})
+      .with(Position{x: 400.0, y: 500.0})
       .with(RotationComponent(0.0))
-      .with(HumanViewComponent::new(ctx))
+      .with(ViewComponent{
+        viewType: Views::Zombie,
+        meshes: Vec::new()
+      })
+      .build();
+
+    world.create_entity()
+      .with(Position{x: 1000.0, y: 500.0})
+      .with(RotationComponent(0.0))
+      .with(ViewComponent{
+        viewType: Views::Human,
+        meshes: Vec::new()
+      })
       .with(ControllerComponent{
         movingLeft: false,
         movingRight: false,
@@ -37,6 +50,8 @@ impl MainState{
         movingBackward: false,
       })
       .build();
+
+    
 
     let dispatcher = DispatcherBuilder::new()
       .with(ControllerSystem, "ControllerSystem", &[])
@@ -103,16 +118,29 @@ impl event::EventHandler for MainState {
       }
   }
 
-	fn update(&mut self, _ctx: &mut Context) -> GameResult {
+	fn update(&mut self, ctx: &mut Context) -> GameResult {
     self.dispatcher.dispatch(&mut self.world);
     // self.world.maintain();
+    let mut view_comp = self.world.write_storage::<ViewComponent>();
+    for (view) in (&mut view_comp).join() {
+      match view.viewType{
+        Views::Human => {
+          let image = graphics::Image::new(ctx, "/player.png").unwrap();
+          view.meshes.push(image);
+        },
+        Views::Zombie => {
+          let image = graphics::Image::new(ctx, "/zombie.png").unwrap();
+          view.meshes.push(image);
+        },
+      }
+    }
 		Ok(())
   }
   
 	fn draw(&mut self, ctx: &mut Context) -> GameResult {
     
 
-    let view_comp = self.world.read_storage::<HumanViewComponent>();
+    let view_comp = self.world.read_storage::<ViewComponent>();
     let position_comp = self.world.read_storage::<Position>();
     let rotations = self.world.read_storage::<RotationComponent>();
     
@@ -123,17 +151,18 @@ impl event::EventHandler for MainState {
     for (view, position, rotation) in (&view_comp, &position_comp, &rotations).join() {
       let params = graphics::DrawParam::new();
       params.rotation(1.1);
-      
-      graphics::draw(
-        ctx,
-        &view.mesh,
-        (
-          Point2::new(position.x, position.y),
-          rotation.0,
-          offset,
-          graphics::WHITE
-        ),
-      ).unwrap();
+      for mesh in &view.meshes{
+        graphics::draw(
+          ctx,
+          mesh,
+          (
+            Point2::new(position.x, position.y),
+            rotation.0,
+            offset,
+            graphics::WHITE
+          ),
+        ).unwrap();
+      }
     }
 
     let dest_point = Point2::new(1.0, 10.0);
