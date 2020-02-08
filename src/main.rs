@@ -2,7 +2,6 @@ use ggez::{GameResult};
 use ggez;
 use ggez::event;
 use ggez::graphics;
-use ggez::nalgebra::Point2;
 use ggez::conf;
 use std::path;
 use std::env;
