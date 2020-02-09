@@ -26,6 +26,7 @@ impl MainState{
     world.register::<RotationComponent>();
     world.register::<ViewComponent>();
     world.register::<ShooterComponent>();
+    world.register::<LinearMovementComponent>();
     
     // world.register::<ViewComponent<Player>>();
 
@@ -46,10 +47,6 @@ impl MainState{
         movingBackward: false,
         isFiring: false,
       })
-      .with(ShooterComponent{
-        rof: 5,
-        cooldown: 0,
-      })
       .build();
 
     
@@ -57,7 +54,7 @@ impl MainState{
     let dispatcher = DispatcherBuilder::new()
       .with(ControllerSystem, "ControllerSystem", &[])
       .with(ShooterSystem, "ShooterSystem", &[])
-      // .with(LinearMovement, "LinearMovement", &[])
+      .with(LinearMovement, "LinearMovement", &[])
       // .with(ZombieSpawner, "ZombieSpawner", &[])
 			.build();
     
@@ -71,6 +68,20 @@ impl MainState{
 
 use specs::Join;
 impl event::EventHandler for MainState {
+  fn mouse_button_up_event(&mut self,_ctx: &mut Context,_button: MouseButton,_x: f32,_y: f32,){
+    let mut controllers = self.world.write_storage::<ControllerComponent>();
+    for (controller) in (&mut controllers).join(){
+      controller.isFiring = false;
+    }
+  }
+
+  fn mouse_button_down_event(&mut self,_ctx: &mut Context,_button: MouseButton,_x: f32,_y: f32,){
+    let mut controllers = self.world.write_storage::<ControllerComponent>();
+    for controller in (&mut controllers).join(){
+      controller.isFiring = true;
+    }
+  }
+
   fn mouse_motion_event(&mut self, _ctx: &mut Context, _x: f32, _y: f32, _dx: f32, _dy: f32){
     let controllers = self.world.read_storage::<ControllerComponent>();
     let mut rotations = self.world.write_storage::<RotationComponent>();
@@ -165,7 +176,6 @@ impl event::EventHandler for MainState {
     graphics::clear(ctx, graphics::BLACK);
 
     for (view, position, rotation) in (&view_comp, &position_comp, &rotations).join() {
-      println!("{}", (&view_comp, &position_comp, &rotations).join().count());
       let params = graphics::DrawParam::new()
         .rotation(rotation.0)
         .dest(Point2::new(

@@ -24,6 +24,10 @@ impl<'a> System<'a> for ShooterSystem {
         });
         updater.insert(entity, RotationComponent(rotation.0));
         updater.insert(entity, ViewComponent::new(Views::Bullet));
+        updater.insert(entity, LinearMovementComponent{
+          direction: rotation.0,
+          speed: shooter.speed
+        });
         shooter.cooldown = shooter.rof.clone();
       } else {
         shooter.cooldown -= 1;

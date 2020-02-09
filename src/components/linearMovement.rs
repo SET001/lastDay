@@ -3,9 +3,7 @@ use specs::{Component, VecStorage};
 #[derive(Component, Debug)]
 #[storage(VecStorage)]
 
-pub struct ShooterComponent {
-  pub cooldown: isize,
-  pub rof: isize,
-  pub speed: f32,
+pub struct LinearMovementComponent {
   pub direction: f32,
+  pub speed: f32,
 }
