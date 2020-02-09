@@ -3,7 +3,7 @@ use ggez::{GameResult, Context};
 use ggez::event::{self, Axis, Button, GamepadId, KeyCode, KeyMods, MouseButton};
 use ggez::timer;
 use ggez::graphics;
-use ggez::nalgebra::Point2;
+use ggez::nalgebra::{Point2, Vector2};
 use std::ops::Deref;
 
 use crate::components::*;
@@ -181,6 +181,7 @@ impl event::EventHandler for MainState {
         .dest(Point2::new(
           position.x, position.y
         ))
+        .scale(Vector2::new(0.5, 0.5))
         .offset(Point2::new(0.25, 0.5));    //  todo remove this
       for mesh in &view.meshes{
         mesh.draw(ctx, params).unwrap();
