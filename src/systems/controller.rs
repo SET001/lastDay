@@ -1,4 +1,4 @@
-use specs::{System, ReadStorage, WriteStorage, Entities, Read, LazyUpdate};
+use specs::{System, ReadStorage, Read, WriteStorage, Entities, LazyUpdate};
 use std::f32::consts::PI;
 
 use crate::components::*;
@@ -10,11 +10,13 @@ impl<'a> System<'a> for ControllerSystem {
     ReadStorage<'a, ControllerComponent>,
     WriteStorage<'a, Position>,
     ReadStorage<'a, RotationComponent>,
+    Read<'a, LazyUpdate>,
   );
 
-  fn run(&mut self, (controllers, mut positions, rotations): Self::SystemData) {
+  fn run(&mut self, (controllers, mut positions, rotations, updater): Self::SystemData) {
     use specs::Join;
     let speed = 4.0;
+    // lazy.remove::<Pos>(entity);
     for (controller, position, rotation) in (&controllers, &mut positions, &rotations).join(){
       if controller.movingRight {
         let angle = rotation.0 - PI / 180.0 * 90.0 ;
