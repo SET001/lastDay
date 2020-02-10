@@ -16,9 +16,9 @@ impl<'a> System<'a> for ZombieSpawner {
   );
 
   fn run(&mut self, (mut spawners, positions, entities, updater): Self::SystemData) {
+    let mut rng = rand::thread_rng();
     for (spawner, position) in (&mut spawners, &positions).join() {
       if spawner.cooldown <= 0.0 {
-        let mut rng = rand::thread_rng();
         let zombie = entities.create();
         let angle = rng.gen_range(-PI, PI);
 
