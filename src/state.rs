@@ -192,46 +192,48 @@ impl event::EventHandler for MainState {
         //.offset(Point2::new(0.25, 0.5));    //  todo remove this
       for mesh in &view.meshes{
         mesh.draw(ctx, params).unwrap();
-        let dim = mesh. dimensions(ctx).unwrap();
-        let width = dim.w;
-        let height = dim.h;
-       
-        let debugRect = graphics::Mesh::new_rectangle(
-          ctx,
-          graphics::DrawMode::stroke(5.0),
-          graphics::Rect::new(0.0, 0.0, width-1.0, height-1.0),
-          graphics::WHITE
-        ).unwrap();
-        graphics::draw(
-          ctx, &debugRect, params
-        ).unwrap();
-        // view.meshes.push(Box::new(debugRect));
+        if cfg!(feature="showDebugMeshes")  {
+          let dim = mesh. dimensions(ctx).unwrap();
+          let width = dim.w;
+          let height = dim.h;
+          let debugRect = graphics::Mesh::new_rectangle(
+            ctx,
+            graphics::DrawMode::stroke(5.0),
+            graphics::Rect::new(0.0, 0.0, width-1.0, height-1.0),
+            graphics::WHITE
+          ).unwrap();
+          graphics::draw(
+            ctx, &debugRect, params
+          ).unwrap();
+        }
       }
     }
-
-    for (collision, position) in (&collisions, &position_comp).join() {
-      let params = graphics::DrawParam::new()
-        .dest(Point2::new(
-          position.x, position.y
-        ))
-        .scale(Vector2::new(scale, scale));
-      let circle = graphics::Mesh::new_circle(
-        ctx,
-        graphics::DrawMode::stroke(5.0),
-        Point2::new(0.0, 0.0),
-        collision.radius,
-        0.1,
-        graphics::Color{
-          r: 255.0,
-          g: 0.0,
-          b: 0.0,
-          a: 1.0
-        },
-      ).unwrap();
-      graphics::draw(
-        ctx, &circle, params
-      ).unwrap();
+    if cfg!(feature="showDebugMeshes") {
+      for (collision, position) in (&collisions, &position_comp).join() {
+        let params = graphics::DrawParam::new()
+          .dest(Point2::new(
+            position.x, position.y
+          ))
+          .scale(Vector2::new(scale, scale));
+        let circle = graphics::Mesh::new_circle(
+          ctx,
+          graphics::DrawMode::stroke(5.0),
+          Point2::new(0.0, 0.0),
+          collision.radius,
+          0.1,
+          graphics::Color{
+            r: 255.0,
+            g: 0.0,
+            b: 0.0,
+            a: 1.0
+          },
+        ).unwrap();
+        graphics::draw(
+          ctx, &circle, params
+        ).unwrap();
+      }
     }
+    
 
     let dest_point = Point2::new(1.0, 10.0);
     let stext = format!("Entities: {}\nFPS: {}", count, timer::fps(ctx).floor());
