@@ -27,6 +27,7 @@ impl MainState{
     world.register::<ViewComponent>();
     world.register::<ShooterComponent>();
     world.register::<LinearMovementComponent>();
+    world.register::<CollisionComponent>();
     
     // world.register::<ViewComponent<Player>>();
 
@@ -34,10 +35,11 @@ impl MainState{
       .with(Position{x: 400.0, y: 500.0})
       .with(RotationComponent(0.0))
       .with(ViewComponent::new (Views::Zombie))
+      .with(CollisionComponent::new(20.0))
       .build();
 
     world.create_entity()
-      .with(Position{x: 1000.0, y: 500.0})
+      .with(Position{x: 400.0, y: 300.0})
       .with(RotationComponent(0.0))
       .with(ViewComponent::new (Views::Human))
       .with(ControllerComponent{
@@ -55,6 +57,7 @@ impl MainState{
       .with(ControllerSystem, "ControllerSystem", &[])
       .with(ShooterSystem, "ShooterSystem", &[])
       .with(LinearMovement, "LinearMovement", &[])
+      .with(CollisionSystem, "CollisionSystem", &[])
       // .with(ZombieSpawner, "ZombieSpawner", &[])
 			.build();
     
@@ -174,14 +177,14 @@ impl event::EventHandler for MainState {
     let rotations = self.world.read_storage::<RotationComponent>();
     
     graphics::clear(ctx, graphics::BLACK);
-
+    let scale = 0.3;
     for (view, position, rotation) in (&view_comp, &position_comp, &rotations).join() {
       let params = graphics::DrawParam::new()
         .rotation(rotation.0)
         .dest(Point2::new(
           position.x, position.y
         ))
-        .scale(Vector2::new(0.5, 0.5))
+        .scale(Vector2::new(scale, scale))
         .offset(Point2::new(0.25, 0.5));    //  todo remove this
       for mesh in &view.meshes{
         mesh.draw(ctx, params).unwrap();

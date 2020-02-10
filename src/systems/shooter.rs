@@ -17,17 +17,18 @@ impl<'a> System<'a> for ShooterSystem {
     let count = (&shooters, &positions, &rotations).join().count();
     for (shooter, position, rotation) in (&mut shooters, &positions, &rotations).join() {
       if (shooter.cooldown <= 0){
-        let entity = entities.create();
-        updater.insert(entity, Position {
+        let bullet = entities.create();
+        updater.insert(bullet, Position {
           x: position.x,
           y: position.y
         });
-        updater.insert(entity, RotationComponent(rotation.0));
-        updater.insert(entity, ViewComponent::new(Views::Bullet));
-        updater.insert(entity, LinearMovementComponent{
+        updater.insert(bullet, RotationComponent(rotation.0));
+        updater.insert(bullet, ViewComponent::new(Views::Bullet));
+        updater.insert(bullet, LinearMovementComponent{
           direction: rotation.0,
           speed: shooter.speed
         });
+        updater.insert(bullet, CollisionComponent::new(5.0));
         shooter.cooldown = shooter.rof.clone();
       } else {
         shooter.cooldown -= 1;

@@ -24,7 +24,7 @@ impl<'a> System<'a> for ControllerSystem {
           None => updater.insert(entity, ShooterComponent{
             cooldown: 0,
             rof: 20,
-            speed: 20.0,
+            speed: 10.0,
             direction: rotation.0,
           }),
           _ => ()
