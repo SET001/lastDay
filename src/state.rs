@@ -32,9 +32,9 @@ impl MainState{
     // world.register::<ViewComponent<Player>>();
 
     world.create_entity()
-      .with(Position{x: 400.0, y: 500.0})
+      .with(Position{x: 400.0, y: 300.0})
       .with(ZombieSpawnerComponent{
-        radius: 100.0,
+        radius: 300.0,
         spawnRate: 30.0,
         cooldown: 0.0
       })
@@ -147,13 +147,14 @@ impl event::EventHandler for MainState {
           Views::Human => {
             let image = graphics::Image::new(ctx, "/player.png").unwrap();
             view.meshes.push(Box::new(image));
+
           },
           Views::Zombie => {
             let image = graphics::Image::new(ctx, "/zombie.png").unwrap();
             view.meshes.push(Box::new(image));
           },
           Views::Bullet => {
-            let image = graphics::Mesh::new_circle(
+            let circle = graphics::Mesh::new_circle(
               ctx,
               graphics::DrawMode::fill(),
               Point2::new(0.0, 0.0),
@@ -161,7 +162,7 @@ impl event::EventHandler for MainState {
               0.1,
               graphics::WHITE,
             ).unwrap();
-            view.meshes.push(Box::new(image));
+            view.meshes.push(Box::new(circle));
           }
         }
       }
@@ -177,6 +178,7 @@ impl event::EventHandler for MainState {
     let view_comp = self.world.read_storage::<ViewComponent>();
     let position_comp = self.world.read_storage::<Position>();
     let rotations = self.world.read_storage::<RotationComponent>();
+    let collisions = self.world.read_storage::<CollisionComponent>();
     
     graphics::clear(ctx, graphics::BLACK);
     let scale = 0.3;
@@ -186,11 +188,49 @@ impl event::EventHandler for MainState {
         .dest(Point2::new(
           position.x, position.y
         ))
-        .scale(Vector2::new(scale, scale))
-        .offset(Point2::new(0.25, 0.5));    //  todo remove this
+        .scale(Vector2::new(scale, scale));
+        //.offset(Point2::new(0.25, 0.5));    //  todo remove this
       for mesh in &view.meshes{
         mesh.draw(ctx, params).unwrap();
+        let dim = mesh. dimensions(ctx).unwrap();
+        let width = dim.w;
+        let height = dim.h;
+       
+        let debugRect = graphics::Mesh::new_rectangle(
+          ctx,
+          graphics::DrawMode::stroke(5.0),
+          graphics::Rect::new(0.0, 0.0, width-1.0, height-1.0),
+          graphics::WHITE
+        ).unwrap();
+        graphics::draw(
+          ctx, &debugRect, params
+        ).unwrap();
+        // view.meshes.push(Box::new(debugRect));
       }
+    }
+
+    for (collision, position) in (&collisions, &position_comp).join() {
+      let params = graphics::DrawParam::new()
+        .dest(Point2::new(
+          position.x, position.y
+        ))
+        .scale(Vector2::new(scale, scale));
+      let circle = graphics::Mesh::new_circle(
+        ctx,
+        graphics::DrawMode::stroke(5.0),
+        Point2::new(0.0, 0.0),
+        collision.radius,
+        0.1,
+        graphics::Color{
+          r: 255.0,
+          g: 0.0,
+          b: 0.0,
+          a: 1.0
+        },
+      ).unwrap();
+      graphics::draw(
+        ctx, &circle, params
+      ).unwrap();
     }
 
     let dest_point = Point2::new(1.0, 10.0);
