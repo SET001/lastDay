@@ -7,6 +7,7 @@ mod view;
 mod shooter;
 mod linearMovement;
 mod collision;
+mod zombieSpawner;
 
 pub use self::velocity::*;
 pub use self::position::*;
@@ -17,3 +18,4 @@ pub use self::view::*;
 pub use self::shooter::*;
 pub use self::linearMovement::*;
 pub use self::collision::*;
+pub use self::zombieSpawner::*;

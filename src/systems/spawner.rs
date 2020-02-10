@@ -1,33 +1,38 @@
-use specs::{System, ReadStorage, Entities, Read, LazyUpdate};
+use specs::Join;
+use specs::{System, ReadStorage, WriteStorage, Entities, Read, LazyUpdate};
 use rand::Rng;
+use std::f32::consts::PI;
 
-use crate::components::{Position, HumanViewComponent, Target};
+use crate::components::*;
 
 pub struct ZombieSpawner;
 
 impl<'a> System<'a> for ZombieSpawner {
   type SystemData = (
-    Entities<'a>,
-    ReadStorage<'a, HumanViewComponent>,
+    WriteStorage<'a, ZombieSpawnerComponent>,
     ReadStorage<'a, Position>,
+    Entities<'a>,
     Read<'a, LazyUpdate>,
   );
 
-  fn run(&mut self, (entities, views, positions, updater): Self::SystemData) {
-    use specs::Join;
-    let count = (&views, &positions).join().count();
-    if count < 200000{
-      let mut rng = rand::thread_rng();
-      let enemy = entities.create();
-      updater.insert(enemy, Position {
-        x: rng.gen_range(0.0, 300.0),
-        y: rng.gen_range(0.0, 300.0)
-      });
-      // updater.insert(enemy, HumanViewComponent::new());
-      updater.insert(enemy, Target{
-        x: 200.0,
-        y: 200.0
-      });
+  fn run(&mut self, (mut spawners, positions, entities, updater): Self::SystemData) {
+    for (spawner, position) in (&mut spawners, &positions).join() {
+      if spawner.cooldown <= 0.0 {
+        let mut rng = rand::thread_rng();
+        let zombie = entities.create();
+        let angle = rng.gen_range(0.0, PI);
+
+        updater.insert(zombie, Position {
+          x: position.x + spawner.radius*angle.cos(),
+          y: position.y + spawner.radius*angle.sin()
+        });
+        updater.insert(zombie, RotationComponent(0.0));
+        updater.insert(zombie, ViewComponent::new (Views::Zombie));
+        updater.insert(zombie, CollisionComponent::new(20.0));
+        spawner.cooldown = spawner.spawnRate.clone();
+      } else {
+        spawner.cooldown -= 1.0;
+      }
     }
   }
 }

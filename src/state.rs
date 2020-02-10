@@ -28,14 +28,17 @@ impl MainState{
     world.register::<ShooterComponent>();
     world.register::<LinearMovementComponent>();
     world.register::<CollisionComponent>();
-    
+    world.register::<ZombieSpawnerComponent>();
+
     // world.register::<ViewComponent<Player>>();
 
     world.create_entity()
       .with(Position{x: 400.0, y: 500.0})
-      .with(RotationComponent(0.0))
-      .with(ViewComponent::new (Views::Zombie))
-      .with(CollisionComponent::new(20.0))
+      .with(ZombieSpawnerComponent{
+        radius: 200.0,
+        spawnRate: 30.0,
+        cooldown: 0.0
+      })
       .build();
 
     world.create_entity()
@@ -58,7 +61,7 @@ impl MainState{
       .with(ShooterSystem, "ShooterSystem", &[])
       .with(LinearMovement, "LinearMovement", &[])
       .with(CollisionSystem, "CollisionSystem", &[])
-      // .with(ZombieSpawner, "ZombieSpawner", &[])
+      .with(ZombieSpawner, "ZombieSpawner", &[])
 			.build();
     
 		MainState {
