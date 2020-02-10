@@ -12,7 +12,7 @@ pub enum Views{
 #[storage(VecStorage)]
 pub struct ViewComponent{ 
   pub viewType: Views,
-  pub meshes: Vec<Box<graphics::Drawable + Send + Sync>>
+  pub meshes: Vec<Box<dyn graphics::Drawable + Send + Sync>>
 }
 impl ViewComponent{
   pub fn new(viewType: Views)->ViewComponent{

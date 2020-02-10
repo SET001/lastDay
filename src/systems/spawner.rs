@@ -20,7 +20,7 @@ impl<'a> System<'a> for ZombieSpawner {
       if spawner.cooldown <= 0.0 {
         let mut rng = rand::thread_rng();
         let zombie = entities.create();
-        let angle = rng.gen_range(0.0, PI);
+        let angle = rng.gen_range(-PI, PI);
 
         updater.insert(zombie, Position {
           x: position.x + spawner.radius*angle.cos(),

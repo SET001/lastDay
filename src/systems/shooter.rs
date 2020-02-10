@@ -14,9 +14,8 @@ impl<'a> System<'a> for ShooterSystem {
   );
   fn run(&mut self, (mut shooters, positions, rotations, updater, entities): Self::SystemData) {
     use specs::Join;
-    let count = (&shooters, &positions, &rotations).join().count();
     for (shooter, position, rotation) in (&mut shooters, &positions, &rotations).join() {
-      if (shooter.cooldown <= 0){
+      if shooter.cooldown <= 0 {
         let bullet = entities.create();
         updater.insert(bullet, Position {
           x: position.x,

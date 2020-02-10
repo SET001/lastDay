@@ -1,10 +1,9 @@
-use specs::{Builder, World, WorldExt, Dispatcher, DispatcherBuilder, Entities};
+use specs::{Builder, World, WorldExt, Dispatcher, DispatcherBuilder };
 use ggez::{GameResult, Context};
-use ggez::event::{self, Axis, Button, GamepadId, KeyCode, KeyMods, MouseButton};
+use ggez::event::{self, KeyCode, KeyMods, MouseButton};
 use ggez::timer;
 use ggez::graphics;
 use ggez::nalgebra::{Point2, Vector2};
-use std::ops::Deref;
 
 use crate::components::*;
 use crate::systems::*;
@@ -17,7 +16,7 @@ pub struct MainState{
 }
 
 impl MainState{ 
-	pub fn new(ctx: &mut Context, font: graphics::Font) -> MainState{
+	pub fn new(font: graphics::Font) -> MainState{
 		let mut world = World::new();
 		world.register::<Position>();
     // world.register::<Velocity>();
@@ -35,7 +34,7 @@ impl MainState{
     world.create_entity()
       .with(Position{x: 400.0, y: 500.0})
       .with(ZombieSpawnerComponent{
-        radius: 200.0,
+        radius: 100.0,
         spawnRate: 30.0,
         cooldown: 0.0
       })
@@ -76,7 +75,7 @@ use specs::Join;
 impl event::EventHandler for MainState {
   fn mouse_button_up_event(&mut self,_ctx: &mut Context,_button: MouseButton,_x: f32,_y: f32,){
     let mut controllers = self.world.write_storage::<ControllerComponent>();
-    for (controller) in (&mut controllers).join(){
+    for controller in (&mut controllers).join(){
       controller.isFiring = false;
     }
   }
@@ -93,16 +92,16 @@ impl event::EventHandler for MainState {
     let mut rotations = self.world.write_storage::<RotationComponent>();
     let positions = self.world.write_storage::<Position>();
 
-    for (controller, rotation, position) in (&controllers, &mut rotations, &positions).join(){
+    for (_controller, rotation, position) in (&controllers, &mut rotations, &positions).join(){
       rotation.0 = (_y - position.y).atan2(_x - position.x);
     }
   }
 
   fn key_down_event( &mut self,
-    ctx: &mut Context,
+    _ctx: &mut Context,
     keycode: KeyCode,
-    keymod: KeyMods,
-    repeat: bool){
+    _keymod: KeyMods,
+    _repeat: bool){
       let mut controllers = self.world.write_storage::<ControllerComponent>();
       for controller in (&mut controllers).join(){
         let state = true;
@@ -119,7 +118,7 @@ impl event::EventHandler for MainState {
   fn key_up_event( &mut self,
     ctx: &mut Context,
     keycode: KeyCode,
-    keymod: KeyMods){
+    _keymod: KeyMods){
       let mut controllers = self.world.write_storage::<ControllerComponent>();
       if keycode == KeyCode::Escape {
         event::quit(ctx);
@@ -142,7 +141,7 @@ impl event::EventHandler for MainState {
     self.world.maintain();
     self.dispatcher.dispatch(&mut self.world);
     let mut view_comp = self.world.write_storage::<ViewComponent>();
-    for (view) in (&mut view_comp).join() {
+    for view in (&mut view_comp).join() {
       if view.meshes.len() < 1 {
         match view.viewType{
           Views::Human => {

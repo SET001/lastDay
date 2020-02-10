@@ -1,8 +1,9 @@
+#![allow(non_snake_case)]
+
 use ggez::{GameResult};
 use ggez;
 use ggez::event;
 use ggez::graphics;
-use ggez::conf;
 use std::path;
 use std::env;
 
@@ -27,14 +28,14 @@ fn main() -> GameResult{
   let (ctx, event_loop) = &mut cb.build()?;
 
   //  TODO: move this to config
-  let screen_width = 2560.0;
-  let screen_height = 1080.0;
-  graphics::set_mode(ctx, conf::WindowMode::default().dimensions(screen_width, screen_height)).unwrap();
-  graphics::set_screen_coordinates(ctx, graphics::Rect::new(0.0, 0.0, screen_width, screen_height)).unwrap();
-  ggez::graphics::set_fullscreen(ctx, conf::FullscreenType::Desktop)?;
+  // let screen_width = 2560.0;
+  // let screen_height = 1080.0;
+  // graphics::set_mode(ctx, conf::WindowMode::default().dimensions(screen_width, screen_height)).unwrap();
+  // graphics::set_screen_coordinates(ctx, graphics::Rect::new(0.0, 0.0, screen_width, screen_height)).unwrap();
+  // ggez::graphics::set_fullscreen(ctx, conf::FullscreenType::Desktop)?;
 
   let font = graphics::Font::new(ctx, "/DejaVuSerif.ttf").unwrap();
-  let state = &mut MainState::new(ctx, font);
+  let state = &mut MainState::new(font);
   event::run(ctx, event_loop, state)?;
   Ok(())
 }
