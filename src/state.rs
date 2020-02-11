@@ -28,6 +28,7 @@ impl MainState{
     world.register::<LinearMovementComponent>();
     world.register::<CollisionComponent>();
     world.register::<ZombieSpawnerComponent>();
+    world.register::<RemoveWhenOutOfScreen>();
 
     // world.register::<ViewComponent<Player>>();
 
@@ -61,6 +62,7 @@ impl MainState{
       .with(LinearMovement, "LinearMovement", &[])
       .with(CollisionSystem, "CollisionSystem", &[])
       .with(ZombieSpawner, "ZombieSpawner", &[])
+      .with(OutOfScreenRemover, "OutOfScreenRemover", &[])
 			.build();
     
 		MainState {

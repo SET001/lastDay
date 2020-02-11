@@ -8,6 +8,7 @@ mod shooter;
 mod linearMovement;
 mod collision;
 mod zombieSpawner;
+mod removeWhenOutOfScreen;
 
 pub use self::velocity::*;
 pub use self::position::*;
@@ -19,3 +20,4 @@ pub use self::shooter::*;
 pub use self::linearMovement::*;
 pub use self::collision::*;
 pub use self::zombieSpawner::*;
+pub use self::removeWhenOutOfScreen::*;

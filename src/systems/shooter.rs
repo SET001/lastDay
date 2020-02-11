@@ -28,6 +28,7 @@ impl<'a> System<'a> for ShooterSystem {
           speed: shooter.speed
         });
         updater.insert(bullet, CollisionComponent::new(5.0));
+        updater.insert(bullet, RemoveWhenOutOfScreen{});
         shooter.cooldown = shooter.rof.clone();
       } else {
         shooter.cooldown -= 1;
