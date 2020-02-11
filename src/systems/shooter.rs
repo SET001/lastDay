@@ -27,7 +27,7 @@ impl<'a> System<'a> for ShooterSystem {
           direction: rotation.0,
           speed: shooter.speed
         });
-        updater.insert(bullet, CollisionComponent::new(5.0));
+        updater.insert(bullet, CollisionComponent::new(5.0, 0.0, 0.0));
         updater.insert(bullet, RemoveWhenOutOfScreen{});
         shooter.cooldown = shooter.rof.clone();
       } else {

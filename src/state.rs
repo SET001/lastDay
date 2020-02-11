@@ -211,6 +211,7 @@ impl event::EventHandler for MainState {
       }
     }
     if cfg!(feature="showDebugMeshes") {
+      //  draw debug collision circle
       for (collision, position) in (&collisions, &position_comp).join() {
         let params = graphics::DrawParam::new()
           .dest(Point2::new(
@@ -220,7 +221,7 @@ impl event::EventHandler for MainState {
         let circle = graphics::Mesh::new_circle(
           ctx,
           graphics::DrawMode::stroke(5.0),
-          Point2::new(0.0, 0.0),
+          Point2::new(collision.center.x, collision.center.y),
           collision.radius,
           0.1,
           graphics::Color{

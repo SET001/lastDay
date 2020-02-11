@@ -11,10 +11,10 @@ pub struct CollisionComponent {
 }
 
 impl CollisionComponent{
-  pub fn new(radius: f32) -> CollisionComponent {
+  pub fn new(radius: f32, x: f32, y: f32) -> CollisionComponent {
     CollisionComponent {
       radius,
-      center: Point2::new(0.0, 0.0),
+      center: Point2::new(x, y),
       collisions: Vec::new(),
     }
   }

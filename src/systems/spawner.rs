@@ -28,7 +28,7 @@ impl<'a> System<'a> for ZombieSpawner {
         });
         updater.insert(zombie, RotationComponent(0.0));
         updater.insert(zombie, ViewComponent::new (Views::Zombie));
-        updater.insert(zombie, CollisionComponent::new(20.0));
+        updater.insert(zombie, CollisionComponent::new(50.0, 100.0, 120.0));
         spawner.cooldown = spawner.spawnRate.clone();
       } else {
         spawner.cooldown -= 1.0;
