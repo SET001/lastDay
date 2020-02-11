@@ -1,4 +1,6 @@
 #![allow(non_snake_case)]
+#[macro_use]
+extern crate dotenv_codegen;
 
 use ggez::{GameResult};
 use ggez;

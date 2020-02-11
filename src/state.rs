@@ -4,6 +4,8 @@ use ggez::event::{self, KeyCode, KeyMods, MouseButton};
 use ggez::timer;
 use ggez::graphics;
 use ggez::nalgebra::{Point2, Vector2};
+use dotenv::dotenv;
+use std::env;
 
 use crate::components::*;
 use crate::systems::*;
@@ -17,6 +19,7 @@ pub struct MainState{
 
 impl MainState{ 
 	pub fn new(font: graphics::Font) -> MainState{
+    dotenv().ok();
 		let mut world = World::new();
 		world.register::<Position>();
     // world.register::<Velocity>();
@@ -36,8 +39,10 @@ impl MainState{
       .with(Position{x: 400.0, y: 300.0})
       .with(ZombieSpawnerComponent{
         radius: 300.0,
-        spawnRate: 30.0,
-        cooldown: 0.0
+        spawnRate: dotenv!("zombieSpawner.spawnRate").parse::<f32>().unwrap(),
+        cooldown: 0.0,
+        spawnInitially: dotenv!("zombieSpawner.spawnInitially").parse::<isize>().unwrap(),
+        initiallySpawned: false
       })
       .build();
 

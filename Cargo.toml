@@ -13,6 +13,8 @@ nalgebra = "0.19.0"
 mint = "0.5.4"
 cgmath = {version= "0.17", features=["mint"]}
 rand = "0.7.3"
+dotenv = "0.15.0"
+dotenv_codegen = "0.15.0"
 
 [features]
 default = ["showDebugMeshes"]
