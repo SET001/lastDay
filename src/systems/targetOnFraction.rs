@@ -18,7 +18,6 @@ impl<'a> System<'a> for TargetOnFraction {
     for (position, fractionTargets, entity) in (&positions, &fractionsTargetables, &entities).join() {
       if let None = targets.get(entity) {
         //  TODO: sort them by distance to entity
-        //  TODO: check if distance is withing discovery range
         let data = (&fractionables, &positions, &entities)
           .join()
           .filter(|&(fractionable, _, _)| fractionTargets.0.contains(&fractionable.0))
