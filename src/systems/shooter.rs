@@ -1,5 +1,5 @@
 use specs::{System, ReadStorage, WriteStorage, Read, LazyUpdate, Entities};
-
+use ggez::nalgebra::{distance, Point2};
 use crate::components::*;
 
 pub struct ShooterSystem;
@@ -14,14 +14,18 @@ impl<'a> System<'a> for ShooterSystem {
   );
   fn run(&mut self, (mut shooters, positions, rotations, updater, entities): Self::SystemData) {
     use specs::Join;
+    let scale = 0.3;
     for (shooter, position, rotation) in (&mut shooters, &positions, &rotations).join() {
       if shooter.cooldown <= 0 {
         let bullet = entities.create();
-        updater.insert(bullet, Position {
-          x: position.x,
-          y: position.y
-        });
-        updater.insert(bullet, RotationComponent(rotation.0));
+        let dist = distance(&Point2::new(0.0, 0.0), &shooter.originOffset);
+        let angle = (shooter.originOffset.y).atan2(shooter.originOffset.x);
+        let bulletPosition = Position {
+          x: position.x+dist*(rotation.0+angle).cos()*scale,
+          y: position.y+dist*(rotation.0+angle).sin()*scale
+        };
+        updater.insert(bullet, bulletPosition);
+        updater.insert(bullet, RotationComponent(0.0));
         updater.insert(bullet, ViewComponent::new(Views::Bullet));
         updater.insert(bullet, LinearMovementComponent{
           direction: rotation.0,

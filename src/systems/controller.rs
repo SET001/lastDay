@@ -1,5 +1,6 @@
 use specs::{System, ReadStorage, Read, WriteStorage, Entities, LazyUpdate};
 use std::f32::consts::PI;
+use ggez::nalgebra::{Point2};
 
 use crate::components::*;
 
@@ -26,6 +27,7 @@ impl<'a> System<'a> for ControllerSystem {
             rof: 20,
             speed: 10.0,
             direction: rotation.0,
+            originOffset: Point2::new(300.0, 155.0)
           }),
           _ => ()
         }
