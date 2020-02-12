@@ -24,7 +24,10 @@ fn spawn<'a>(
   });
   updater.insert(zombie, RotationComponent(0.0));
   updater.insert(zombie, ViewComponent::new (Views::Zombie));
-  updater.insert(zombie, CollisionComponent::new(50.0, 100.0, 120.0));}
+  updater.insert(zombie, CollisionComponent::new(50.0, 100.0, 120.0));
+  updater.insert(zombie, LinearMovementComponent{direction: 0.5, speed: 0.5});
+  updater.insert(zombie, TargetOnFractionsComponent(vec![Fractions::Humans]));
+}
 
 pub struct ZombieSpawner;
 

@@ -1,5 +1,4 @@
 mod position;
-mod velocity;
 mod target;
 mod controller;
 mod rotation;
@@ -10,8 +9,9 @@ mod collision;
 mod zombieSpawner;
 mod removeWhenOutOfScreen;
 mod damageOnCollide;
+mod fractionable;
+mod targetOnFraction;
 
-pub use self::velocity::*;
 pub use self::position::*;
 pub use self::target::*;
 pub use self::controller::*;
@@ -23,3 +23,5 @@ pub use self::collision::*;
 pub use self::zombieSpawner::*;
 pub use self::removeWhenOutOfScreen::*;
 pub use self::damageOnCollide::*;
+pub use self::fractionable::*;
+pub use self::targetOnFraction::*;
