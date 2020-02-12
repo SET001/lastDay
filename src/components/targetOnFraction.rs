@@ -1,6 +1,6 @@
 use specs::{Component, VecStorage, Entity};
+use super::fractionable::{Fractions};
 
 #[derive(Component, Debug)]
 #[storage(VecStorage)]
-
-pub struct TargetComponent (pub Entity);
+pub struct TargetOnFractionsComponent(pub Vec<Fractions>);

@@ -6,6 +6,7 @@ mod collision;
 mod spawner;
 mod outOfScreenRemover;
 mod damageOnCollide;
+mod targetOnFraction;
 
 pub use self::linearMovement::LinearMovement;
 pub use self::controller::*;
@@ -14,3 +15,4 @@ pub use self::collision::*;
 pub use self::spawner::*;
 pub use self::outOfScreenRemover::*;
 pub use self::damageOnCollide::*;
+pub use self::targetOnFraction::*;
