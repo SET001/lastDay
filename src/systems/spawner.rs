@@ -22,7 +22,7 @@ fn spawn<'a>(
     x: position.x + spawner.radius*angle.cos(),
     y: position.y + spawner.radius*angle.sin()
   });
-  updater.insert(zombie, RotationComponent(0.0));
+  updater.insert(zombie, RotationComponent(rng.gen_range(-PI, PI)));
   updater.insert(zombie, ViewComponent::new (Views::Zombie));
   updater.insert(zombie, CollisionComponent::new(50.0, 100.0, 120.0));
   updater.insert(zombie, TargetOnFractionsComponent(vec![Fractions::Humans]));
