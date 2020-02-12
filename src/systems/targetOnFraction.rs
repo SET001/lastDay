@@ -1,4 +1,5 @@
 use specs::{System, ReadStorage, Read, LazyUpdate, Entities};
+use ggez::nalgebra::{distance, Point2};
 
 use crate::components::*;
 pub struct TargetOnFraction;
@@ -21,6 +22,12 @@ impl<'a> System<'a> for TargetOnFraction {
         let data = (&fractionables, &positions, &entities)
           .join()
           .filter(|&(fractionable, _, _)| fractionTargets.0.contains(&fractionable.0))
+          .filter(|&(_, enemyPosition, _)| {
+            distance(
+              &Point2::new(position.x, position.y),
+              &Point2::new(enemyPosition.x, enemyPosition.y),
+            ) < 600.0   //  TODO: do not hardcode this distance
+          })
           .collect::<Vec<_>>();
         if data.len() > 0 {
           let (_, _, targetEntity) = data[0];
