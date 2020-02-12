@@ -23,8 +23,8 @@ impl<'a> System<'a> for TargetOnFraction {
           .filter(|&(fractionable, _, _)| fractionTargets.0.contains(&fractionable.0))
           .collect::<Vec<_>>();
         if data.len() > 0 {
-          let (_, _, ent) = data[0];
-          updater.insert(entity, TargetComponent(ent))
+          let (_, _, targetEntity) = data[0];
+          updater.insert(entity, TargetComponent(targetEntity))
         }
       }
     }

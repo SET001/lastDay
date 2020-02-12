@@ -32,6 +32,7 @@ impl MainState{
       .with(OutOfScreenRemover, "OutOfScreenRemover", &[])
       .with(DamageOnCollide, "DamageOnCollide", &["CollisionSystem"])
       .with(TargetOnFraction, "TargetOnFraction", &[])
+      .with(FollowTarget, "FollowTarget", &[])
       .build();
     
     dispatcher.setup(&mut world);
