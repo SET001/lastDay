@@ -185,8 +185,7 @@ impl event::EventHandler for MainState {
     let view_comp = self.world.read_storage::<ViewComponent>();
     let position_comp = self.world.read_storage::<Position>();
     let rotations = self.world.read_storage::<RotationComponent>();
-    let collisions = self.world.read_storage::<CollisionComponent>();
-    
+   
     graphics::clear(ctx, graphics::BLACK);
     let scale = 0.3;
     for (view, position, rotation) in (&view_comp, &position_comp, &rotations).join() {
@@ -200,6 +199,7 @@ impl event::EventHandler for MainState {
       for mesh in &view.meshes{
         mesh.draw(ctx, params).unwrap();
         if cfg!(feature="showDebugMeshes")  {
+          //  draw debug mesh rectangle
           let dim = mesh. dimensions(ctx).unwrap();
           let width = dim.w;
           let height = dim.h;
@@ -212,10 +212,34 @@ impl event::EventHandler for MainState {
           graphics::draw(
             ctx, &debugRect, params
           ).unwrap();
+          //  draw position marker
+          let params = graphics::DrawParam::new()
+            .dest(Point2::new(
+              position.x, position.y
+            ))
+            .scale(Vector2::new(scale, scale));
+          let circle = graphics::Mesh::new_circle(
+            ctx,
+            graphics::DrawMode::stroke(5.0),
+            Point2::new(0.0, 0.0),
+            4.0,
+            0.1,
+            graphics::Color{
+              r: 0.0,
+              g: 288.0,
+              b: 0.0,
+              a: 1.0
+            },
+          ).unwrap();
+          graphics::draw(
+            ctx, &circle, params
+          ).unwrap();
         }
       }
     }
     if cfg!(feature="showDebugMeshes") {
+      let collisions = self.world.read_storage::<CollisionComponent>();
+      let shooters = self.world.read_storage::<ShooterComponent>();
       //  draw debug collision circle
       for (collision, position) in (&collisions, &position_comp).join() {
         let params = graphics::DrawParam::new()
@@ -235,6 +259,30 @@ impl event::EventHandler for MainState {
             b: 0.0,
             a: 1.0
           },
+        ).unwrap();
+        graphics::draw(
+          ctx, &circle, params
+        ).unwrap();
+      }
+      //  draw debug shooter origin
+      for (shooter, position, rotation) in (&shooters, &position_comp, &rotations).join() {
+        let params = graphics::DrawParam::new()
+        .dest(Point2::new(
+          position.x,
+          position.y
+        ))
+        .rotation(rotation.0)
+        .scale(Vector2::new(scale, scale));
+        let circle = graphics::Mesh::new_circle(
+          ctx,
+          graphics::DrawMode::stroke(5.0),
+          Point2::new(
+            shooter.originOffset.x,
+            shooter.originOffset.y
+          ),
+          5.0,
+          0.1,
+          graphics::WHITE,
         ).unwrap();
         graphics::draw(
           ctx, &circle, params
