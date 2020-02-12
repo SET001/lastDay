@@ -32,7 +32,7 @@ impl MainState{
       .with(OutOfScreenRemover, "OutOfScreenRemover", &[])
       .with(DamageOnCollide, "DamageOnCollide", &["CollisionSystem"])
       .with(TargetOnFraction, "TargetOnFraction", &[])
-      .with(FollowTarget, "FollowTarget", &[])
+      // .with(FollowTarget, "FollowTarget", &[])
       .build();
     
     dispatcher.setup(&mut world);
@@ -49,7 +49,7 @@ impl MainState{
     .build();
 
   world.create_entity()
-    .with(Position{x: 400.0, y: 300.0})
+    .with(Position{x: 1200.0, y: 600.0})
     .with(RotationComponent(0.0))
     .with(ViewComponent::new (Views::Human))
     .with(FractionableComponent(Fractions::Humans))
@@ -232,12 +232,14 @@ impl event::EventHandler for MainState {
     if cfg!(feature="showDebugMeshes") {
       let collisions = self.world.read_storage::<CollisionComponent>();
       let shooters = self.world.read_storage::<ShooterComponent>();
+      let rotations = self.world.read_storage::<RotationComponent>();
       //  draw debug collision circle
-      for (collision, position) in (&collisions, &position_comp).join() {
+      for (collision, position, rotation) in (&collisions, &position_comp, &rotations).join() {
         let params = graphics::DrawParam::new()
           .dest(Point2::new(
             position.x, position.y
           ))
+          .rotation(rotation.0)
           .scale(Vector2::new(scale, scale));
         let circle = graphics::Mesh::new_circle(
           ctx,
