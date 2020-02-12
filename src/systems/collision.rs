@@ -37,7 +37,7 @@ impl<'a> System<'a> for CollisionSystem {
             &Point2::new(group.position.x, group.position.y),
           );
           if dist<collision.radius {
-            entities.delete(entity).unwrap();
+            collision.collisions.push(entity);
           }
         }
       }
