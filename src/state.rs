@@ -22,8 +22,6 @@ impl MainState{
     dotenv().ok();
 		let mut world = World::new();
 		world.register::<Position>();
-    // world.register::<Velocity>();
-    // world.register::<Target>();
     world.register::<ControllerComponent>();
     world.register::<RotationComponent>();
     world.register::<ViewComponent>();
@@ -32,6 +30,7 @@ impl MainState{
     world.register::<CollisionComponent>();
     world.register::<ZombieSpawnerComponent>();
     world.register::<RemoveWhenOutOfScreen>();
+    world.register::<DamageOnCollideComponent>();
 
     // world.register::<ViewComponent<Player>>();
 
@@ -68,6 +67,7 @@ impl MainState{
       .with(CollisionSystem, "CollisionSystem", &[])
       .with(ZombieSpawner, "ZombieSpawner", &[])
       .with(OutOfScreenRemover, "OutOfScreenRemover", &[])
+      .with(DamageOnCollide, "DamageOnCollide", &["CollisionSystem"])
 			.build();
     
 		MainState {

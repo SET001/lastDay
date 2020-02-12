@@ -33,6 +33,7 @@ impl<'a> System<'a> for ShooterSystem {
         });
         updater.insert(bullet, CollisionComponent::new(5.0, 0.0, 0.0));
         updater.insert(bullet, RemoveWhenOutOfScreen{});
+        updater.insert(bullet, DamageOnCollideComponent(100.0));
         shooter.cooldown = shooter.rof.clone();
       } else {
         shooter.cooldown -= 1;

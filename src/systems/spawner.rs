@@ -24,8 +24,7 @@ fn spawn<'a>(
   });
   updater.insert(zombie, RotationComponent(0.0));
   updater.insert(zombie, ViewComponent::new (Views::Zombie));
-  updater.insert(zombie, CollisionComponent::new(50.0, 100.0, 120.0));
-}
+  updater.insert(zombie, CollisionComponent::new(50.0, 100.0, 120.0));}
 
 pub struct ZombieSpawner;
 
@@ -41,7 +40,7 @@ impl<'a> System<'a> for ZombieSpawner {
     let mut rng = rand::thread_rng();
     for (mut spawner, position) in (&mut spawners, &positions).join() {
       if spawner.spawnInitially>0 && !spawner.initiallySpawned {
-        for _o in 1..spawner.spawnInitially {
+        for _o in 0..spawner.spawnInitially {
           spawn(&mut spawner, &position, &entities, &updater, &mut rng);  
           spawner.initiallySpawned = true;
         }

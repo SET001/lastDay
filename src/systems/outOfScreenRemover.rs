@@ -19,7 +19,7 @@ impl<'a> System<'a> for OutOfScreenRemover {
   fn run(&mut self, (ross, positions, entities): Self::SystemData) {
     use specs::Join;
     for (_ros, position, entity) in (&ross, &positions, &entities).join() {
-      if position.y< -1000.0 || position.x< -1000.0 || position.y>10000.0 || position.x>10000.0{
+      if position.y< -1000.0 || position.x< -1000.0 || position.y>3000.0 || position.x>3000.0{
         entities.delete(entity).unwrap();
       }
     }
