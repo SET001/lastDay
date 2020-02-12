@@ -9,7 +9,6 @@ use std::env;
 
 use crate::components::*;
 use crate::systems::*;
-// use components::*;
 
 pub struct MainState{
 	dispatcher: Dispatcher<'static, 'static>,
@@ -21,46 +20,10 @@ impl MainState{
 	pub fn new(font: graphics::Font) -> MainState{
     dotenv().ok();
 		let mut world = World::new();
-		world.register::<Position>();
-    world.register::<ControllerComponent>();
-    world.register::<RotationComponent>();
-    world.register::<ViewComponent>();
-    world.register::<ShooterComponent>();
-    world.register::<LinearMovementComponent>();
-    world.register::<CollisionComponent>();
-    world.register::<ZombieSpawnerComponent>();
-    world.register::<RemoveWhenOutOfScreen>();
-    world.register::<DamageOnCollideComponent>();
 
-    // world.register::<ViewComponent<Player>>();
+    world.register::<ViewComponent>();    
 
-    world.create_entity()
-      .with(Position{x: 400.0, y: 300.0})
-      .with(ZombieSpawnerComponent{
-        radius: 300.0,
-        spawnRate: dotenv!("zombieSpawner.spawnRate").parse::<f32>().unwrap(),
-        cooldown: 0.0,
-        spawnInitially: dotenv!("zombieSpawner.spawnInitially").parse::<isize>().unwrap(),
-        initiallySpawned: false
-      })
-      .build();
-
-    world.create_entity()
-      .with(Position{x: 400.0, y: 300.0})
-      .with(RotationComponent(0.0))
-      .with(ViewComponent::new (Views::Human))
-      .with(ControllerComponent{
-        movingLeft: false,
-        movingRight: false,
-        movingForward: false,
-        movingBackward: false,
-        isFiring: false,
-      })
-      .build();
-
-    
-
-    let dispatcher = DispatcherBuilder::new()
+    let mut dispatcher = DispatcherBuilder::new()
       .with(ControllerSystem, "ControllerSystem", &[])
       .with(ShooterSystem, "ShooterSystem", &[])
       .with(LinearMovement, "LinearMovement", &[])
@@ -68,7 +31,35 @@ impl MainState{
       .with(ZombieSpawner, "ZombieSpawner", &[])
       .with(OutOfScreenRemover, "OutOfScreenRemover", &[])
       .with(DamageOnCollide, "DamageOnCollide", &["CollisionSystem"])
-			.build();
+      .with(TargetOnFraction, "TargetOnFraction", &[])
+      .build();
+    
+    dispatcher.setup(&mut world);
+
+    world.create_entity()
+    .with(Position{x: 400.0, y: 300.0})
+    .with(ZombieSpawnerComponent{
+      radius: 300.0,
+      spawnRate: dotenv!("zombieSpawner.spawnRate").parse::<f32>().unwrap(),
+      cooldown: 0.0,
+      spawnInitially: dotenv!("zombieSpawner.spawnInitially").parse::<isize>().unwrap(),
+      initiallySpawned: false
+    })
+    .build();
+
+  world.create_entity()
+    .with(Position{x: 400.0, y: 300.0})
+    .with(RotationComponent(0.0))
+    .with(ViewComponent::new (Views::Human))
+    .with(FractionableComponent(Fractions::Humans))
+    .with(ControllerComponent{
+      movingLeft: false,
+      movingRight: false,
+      movingForward: false,
+      movingBackward: false,
+      isFiring: false,
+    })
+    .build();
     
 		MainState {
 			world,
