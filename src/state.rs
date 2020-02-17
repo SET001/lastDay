@@ -4,16 +4,28 @@ use ggez::event::{self, KeyCode, KeyMods, MouseButton};
 use ggez::timer;
 use ggez::graphics;
 use ggez::nalgebra::{Point2, Vector2};
+use std::f32::consts::PI;
+use nalgebra_glm::Vec2;
+
 use dotenv::dotenv;
-use std::env;
+use ggez_goodies::camera::*;
 
 use crate::components::*;
 use crate::systems::*;
 
+const WINDOW_WIDTH: u32 = 1500;
+const WINDOW_HEIGHT: u32 = 700;
+
+const CAMERA_WIDTH: f32 = 1500.0;
+const CAMERA_HEIGHT: f32 = 700.0;
+
 pub struct MainState{
 	dispatcher: Dispatcher<'static, 'static>,
   world: World,
-  font: graphics::Font
+  font: graphics::Font,
+  camera: Camera,
+  rotation: f32,
+  controller: ControllerComponent,
 }
 
 impl MainState{ 
@@ -21,7 +33,7 @@ impl MainState{
     dotenv().ok();
 		let mut world = World::new();
 
-    world.register::<ViewComponent>();    
+    world.register::<ViewComponent>();
 
     let mut dispatcher = DispatcherBuilder::new()
       .with(ControllerSystem, "ControllerSystem", &[])
@@ -32,13 +44,13 @@ impl MainState{
       .with(OutOfScreenRemover, "OutOfScreenRemover", &[])
       .with(DamageOnCollide, "DamageOnCollide", &["CollisionSystem"])
       .with(TargetOnFraction, "TargetOnFraction", &[])
-      .with(FollowTarget, "FollowTarget", &[])
+      // .with(FollowTarget, "FollowTarget", &[])
       .build();
     
     dispatcher.setup(&mut world);
 
     world.create_entity()
-    .with(Position{x: 400.0, y: 300.0})
+    .with(Position{x: 0.0, y: 0.0})
     .with(ZombieSpawnerComponent{
       radius: 300.0,
       spawnRate: dotenv!("zombieSpawner.spawnRate").parse::<f32>().unwrap(),
@@ -49,7 +61,7 @@ impl MainState{
     .build();
 
   world.create_entity()
-    .with(Position{x: 1200.0, y: 600.0})
+    .with(Position{x: 0.0, y: 0.0})
     .with(RotationComponent(0.0))
     .with(ViewComponent::new (Views::Human))
     .with(FractionableComponent(Fractions::Humans))
@@ -62,12 +74,28 @@ impl MainState{
     })
     .build();
     
+    let camera = Camera::new(WINDOW_WIDTH, WINDOW_HEIGHT, CAMERA_WIDTH, CAMERA_HEIGHT);
+
+
 		MainState {
 			world,
       dispatcher,
-      font
+      font,
+      camera,
+      controller: ControllerComponent::new(),
+      rotation: 0.0,
 		}
 	}
+}
+
+fn setUpController(controller: &mut ControllerComponent, state: bool, keycode: KeyCode){
+  match keycode {
+    KeyCode::D => controller.movingRight = state,
+    KeyCode::A => controller.movingLeft = state,
+    KeyCode::W => controller.movingForward = state,
+    KeyCode::S => controller.movingBackward = state,
+    _ => ()
+  }
 }
 
 use specs::Join;
@@ -90,9 +118,10 @@ impl event::EventHandler for MainState {
     let controllers = self.world.read_storage::<ControllerComponent>();
     let mut rotations = self.world.write_storage::<RotationComponent>();
     let positions = self.world.write_storage::<Position>();
-
     for (_controller, rotation, position) in (&controllers, &mut rotations, &positions).join(){
-      rotation.0 = (_y - position.y).atan2(_x - position.x);
+      let (cx, cy) = self.camera.world_to_screen_coords(Vec2::new(0 as f32, 0 as f32));
+      rotation.0 = (_y-cy as f32).atan2(_x-cx as f32);
+      println!("{:?}, rotation: {}, mouse: {}, {}, camera: {}, {}", position, rotation.0, _x, _y, cx, cy);
     }
   }
 
@@ -101,45 +130,59 @@ impl event::EventHandler for MainState {
     keycode: KeyCode,
     _keymod: KeyMods,
     _repeat: bool){
-      let mut controllers = self.world.write_storage::<ControllerComponent>();
-      for controller in (&mut controllers).join(){
-        let state = true;
-        match keycode {
-          KeyCode::D => controller.movingRight = state,
-          KeyCode::A => controller.movingLeft = state,
-          KeyCode::W => controller.movingForward = state,
-          KeyCode::S => controller.movingBackward = state,
-          _ => ()
-        }
-      }
+      setUpController(&mut self.controller, true, keycode);
   }
 
   fn key_up_event( &mut self,
     ctx: &mut Context,
     keycode: KeyCode,
     _keymod: KeyMods){
-      let mut controllers = self.world.write_storage::<ControllerComponent>();
       if keycode == KeyCode::Escape {
         event::quit(ctx);
       }
-
-      for controller in (&mut controllers).join(){
-        let state = false;
-        match keycode {
-          KeyCode::D => controller.movingRight = state,
-          KeyCode::A => controller.movingLeft = state,
-          KeyCode::W => controller.movingForward = state,
-          KeyCode::S => controller.movingBackward = state,
-          _ => ()
-        }
-      }
+      setUpController(&mut self.controller, false, keycode);
   }
 
 	fn update(&mut self, ctx: &mut Context) -> GameResult {
-    
-    self.world.maintain();
     self.dispatcher.dispatch(&mut self.world);
+    self.world.maintain();
+    let speed = 2.0;
+    
+    let controllers = self.world.read_storage::<ControllerComponent>();
+    let mut positions = self.world.write_storage::<Position>();
+    let rotations = self.world.read_storage::<RotationComponent>();
+    
+    for (_controller, position, rotation) in (&controllers, &mut positions, &rotations).join(){
+      if self.controller.movingForward {
+        position.x += speed * rotation.0.cos();
+        position.y -= speed * rotation.0.sin();
+      }
+      if self.controller.movingBackward {
+        position.x -= speed * rotation.0.cos();
+        position.y += speed * rotation.0.sin();
+      }
+      if self.controller.movingLeft {
+        let angle = PI;
+        position.x += speed * angle.cos();
+        position.y -= speed * angle.sin();
+      }
+      if self.controller.movingRight {
+        let angle: f32 = 0.0;
+        position.x += speed * angle.cos();
+        position.y -= speed * angle.sin();
+      }
+
+      self.camera.move_to(Vec2::new(
+        position.x,
+        position.y
+      ));
+    }
+    
+
+
+    
     let mut view_comp = self.world.write_storage::<ViewComponent>();
+
     for view in (&mut view_comp).join() {
       if view.meshes.len() < 1 {
         match view.viewType{
@@ -175,114 +218,114 @@ impl event::EventHandler for MainState {
     let count = self.world.entities().join().count();
 
     let view_comp = self.world.read_storage::<ViewComponent>();
-    let position_comp = self.world.read_storage::<Position>();
+    let positions = self.world.read_storage::<Position>();
     let rotations = self.world.read_storage::<RotationComponent>();
    
     graphics::clear(ctx, graphics::BLACK);
     let scale = 0.3;
-    for (view, position, rotation) in (&view_comp, &position_comp, &rotations).join() {
+    for (view, position, rotation) in (&view_comp, &positions, &rotations).join() {
+      let (cx, cy) = self.camera.world_to_screen_coords(Vec2::new(position.x, position.y));
+      // println!("Position {:?}, translated to camera coordinates {:?}", position, (cx, cy));
       let params = graphics::DrawParam::new()
         .rotation(rotation.0)
-        .dest(Point2::new(
-          position.x, position.y
-        ))
+        .dest(Point2::new(cx as f32, cy as f32))
         .scale(Vector2::new(scale, scale));
         //.offset(Point2::new(0.25, 0.5));    //  todo remove this
       for mesh in &view.meshes{
         mesh.draw(ctx, params).unwrap();
-        if cfg!(feature="showDebugMeshes")  {
-          //  draw debug mesh rectangle
-          let dim = mesh. dimensions(ctx).unwrap();
-          let width = dim.w;
-          let height = dim.h;
-          let debugRect = graphics::Mesh::new_rectangle(
-            ctx,
-            graphics::DrawMode::stroke(5.0),
-            graphics::Rect::new(0.0, 0.0, width-1.0, height-1.0),
-            graphics::WHITE
-          ).unwrap();
-          graphics::draw(
-            ctx, &debugRect, params
-          ).unwrap();
-          //  draw position marker
-          let params = graphics::DrawParam::new()
-            .dest(Point2::new(
-              position.x, position.y
-            ))
-            .scale(Vector2::new(scale, scale));
-          let circle = graphics::Mesh::new_circle(
-            ctx,
-            graphics::DrawMode::stroke(5.0),
-            Point2::new(0.0, 0.0),
-            4.0,
-            0.1,
-            graphics::Color{
-              r: 0.0,
-              g: 288.0,
-              b: 0.0,
-              a: 1.0
-            },
-          ).unwrap();
-          graphics::draw(
-            ctx, &circle, params
-          ).unwrap();
-        }
+      //   if cfg!(feature="showDebugMeshes")  {
+      //     //  draw debug mesh rectangle
+      //     let dim = mesh. dimensions(ctx).unwrap();
+      //     let width = dim.w;
+      //     let height = dim.h;
+      //     let debugRect = graphics::Mesh::new_rectangle(
+      //       ctx,
+      //       graphics::DrawMode::stroke(5.0),
+      //       graphics::Rect::new(0.0, 0.0, width-1.0, height-1.0),
+      //       graphics::WHITE
+      //     ).unwrap();
+      //     graphics::draw(
+      //       ctx, &debugRect, params
+      //     ).unwrap();
+      //     //  draw position marker
+      //     let params = graphics::DrawParam::new()
+      //       .dest(Point2::new(
+      //         position.x, position.y
+      //       ))
+      //       .scale(Vector2::new(scale, scale));
+      //     let circle = graphics::Mesh::new_circle(
+      //       ctx,
+      //       graphics::DrawMode::stroke(5.0),
+      //       Point2::new(0.0, 0.0),
+      //       4.0,
+      //       0.1,
+      //       graphics::Color{
+      //         r: 0.0,
+      //         g: 288.0,
+      //         b: 0.0,
+      //         a: 1.0
+      //       },
+      //     ).unwrap();
+      //     graphics::draw(
+      //       ctx, &circle, params
+      //     ).unwrap();
+      //   }
       }
     }
-    if cfg!(feature="showDebugMeshes") {
-      let collisions = self.world.read_storage::<CollisionComponent>();
-      let shooters = self.world.read_storage::<ShooterComponent>();
-      let rotations = self.world.read_storage::<RotationComponent>();
-      //  draw debug collision circle
-      for (collision, position, rotation) in (&collisions, &position_comp, &rotations).join() {
-        let params = graphics::DrawParam::new()
-          .dest(Point2::new(
-            position.x, position.y
-          ))
-          .rotation(rotation.0)
-          .scale(Vector2::new(scale, scale));
-        let circle = graphics::Mesh::new_circle(
-          ctx,
-          graphics::DrawMode::stroke(5.0),
-          Point2::new(collision.center.x, collision.center.y),
-          collision.radius,
-          0.1,
-          graphics::Color{
-            r: 255.0,
-            g: 0.0,
-            b: 0.0,
-            a: 1.0
-          },
-        ).unwrap();
-        graphics::draw(
-          ctx, &circle, params
-        ).unwrap();
-      }
-      //  draw debug shooter origin
-      for (shooter, position, rotation) in (&shooters, &position_comp, &rotations).join() {
-        let params = graphics::DrawParam::new()
-        .dest(Point2::new(
-          position.x,
-          position.y
-        ))
-        .rotation(rotation.0)
-        .scale(Vector2::new(scale, scale));
-        let circle = graphics::Mesh::new_circle(
-          ctx,
-          graphics::DrawMode::stroke(5.0),
-          Point2::new(
-            shooter.originOffset.x,
-            shooter.originOffset.y
-          ),
-          5.0,
-          0.1,
-          graphics::WHITE,
-        ).unwrap();
-        graphics::draw(
-          ctx, &circle, params
-        ).unwrap();
-      }
-    }
+    // if cfg!(feature="showDebugMeshes") {
+    //   let collisions = self.world.read_storage::<CollisionComponent>();
+    //   let shooters = self.world.read_storage::<ShooterComponent>();
+    //   let rotations = self.world.read_storage::<RotationComponent>();
+    //   //  draw debug collision circle
+    //   for (collision, position, rotation) in (&collisions, &position_comp, &rotations).join() {
+    //     let params = graphics::DrawParam::new()
+    //       .dest(Point2::new(
+    //         position.x, position.y
+    //       ))
+    //       .rotation(rotation.0)
+    //       .scale(Vector2::new(scale, scale));
+    //     let circle = graphics::Mesh::new_circle(
+    //       ctx,
+    //       graphics::DrawMode::stroke(5.0),
+    //       Point2::new(collision.center.x, collision.center.y),
+    //       collision.radius,
+    //       0.1,
+    //       graphics::Color{
+    //         r: 255.0,
+    //         g: 0.0,
+    //         b: 0.0,
+    //         a: 1.0
+    //       },
+    //     ).unwrap();
+    //     graphics::draw(
+    //       ctx, &circle, params
+    //     ).unwrap();
+    //   }
+    //   //  draw debug shooter origin
+    //   for (shooter, position, rotation) in (&shooters, &position_comp, &rotations).join() {
+    //     let params = graphics::DrawParam::new()
+    //     .dest(Point2::new(
+    //       position.x,
+    //       position.y
+    //     ))
+    //     .rotation(rotation.0)
+    //     .scale(Vector2::new(scale, scale));
+    //     let circle = graphics::Mesh::new_circle(
+    //       ctx,
+    //       graphics::DrawMode::stroke(5.0),
+    //       Point2::new(
+    //         shooter.originOffset.x,
+    //         shooter.originOffset.y
+    //       ),
+    //       5.0,
+    //       0.1,
+    //       graphics::WHITE,
+    //     ).unwrap();
+    //     graphics::draw(
+    //       ctx, &circle, params
+    //     ).unwrap();
+    //   }
+    // }
     
 
     let dest_point = Point2::new(1.0, 10.0);
