@@ -121,7 +121,7 @@ impl event::EventHandler for MainState {
     for (_controller, rotation, position) in (&controllers, &mut rotations, &positions).join(){
       let (cx, cy) = self.camera.world_to_screen_coords(Vec2::new(position.x as f32, position.y as f32));
       rotation.0 = (_y-cy as f32).atan2(_x-cx as f32);
-      println!("{:?}, rotation: {}, mouse: {}, {}, camera: {}, {}", position, rotation.0, _x, _y, cx, cy);
+      // println!("{:?}, rotation: {}, mouse: {}, {}, camera: {}, {}", position, rotation.0, _x, _y, cx, cy);
     }
   }
 
@@ -233,99 +233,100 @@ impl event::EventHandler for MainState {
         //.offset(Point2::new(0.25, 0.5));    //  todo remove this
       for mesh in &view.meshes{
         mesh.draw(ctx, params).unwrap();
-      //   if cfg!(feature="showDebugMeshes")  {
-      //     //  draw debug mesh rectangle
-      //     let dim = mesh. dimensions(ctx).unwrap();
-      //     let width = dim.w;
-      //     let height = dim.h;
-      //     let debugRect = graphics::Mesh::new_rectangle(
-      //       ctx,
-      //       graphics::DrawMode::stroke(5.0),
-      //       graphics::Rect::new(0.0, 0.0, width-1.0, height-1.0),
-      //       graphics::WHITE
-      //     ).unwrap();
-      //     graphics::draw(
-      //       ctx, &debugRect, params
-      //     ).unwrap();
-      //     //  draw position marker
-      //     let params = graphics::DrawParam::new()
-      //       .dest(Point2::new(
-      //         position.x, position.y
-      //       ))
-      //       .scale(Vector2::new(scale, scale));
-      //     let circle = graphics::Mesh::new_circle(
-      //       ctx,
-      //       graphics::DrawMode::stroke(5.0),
-      //       Point2::new(0.0, 0.0),
-      //       4.0,
-      //       0.1,
-      //       graphics::Color{
-      //         r: 0.0,
-      //         g: 288.0,
-      //         b: 0.0,
-      //         a: 1.0
-      //       },
-      //     ).unwrap();
-      //     graphics::draw(
-      //       ctx, &circle, params
-      //     ).unwrap();
-      //   }
+        if cfg!(feature="showDebugMeshes")  {
+          //  draw debug mesh rectangle
+          let dim = mesh. dimensions(ctx).unwrap();
+          let width = dim.w;
+          let height = dim.h;
+          let debugRect = graphics::Mesh::new_rectangle(
+            ctx,
+            graphics::DrawMode::stroke(5.0),
+            graphics::Rect::new(0.0, 0.0, width-1.0, height-1.0),
+            graphics::WHITE
+          ).unwrap();
+          graphics::draw(
+            ctx, &debugRect, params
+          ).unwrap();
+          //  draw position marker
+          let params = graphics::DrawParam::new()
+            .dest(Point2::new(
+              cx as f32, cy as f32
+            ))
+            .scale(Vector2::new(scale, scale));
+          let circle = graphics::Mesh::new_circle(
+            ctx,
+            graphics::DrawMode::stroke(5.0),
+            Point2::new(0.0, 0.0),
+            4.0,
+            0.1,
+            graphics::Color{
+              r: 0.0,
+              g: 288.0,
+              b: 0.0,
+              a: 1.0
+            },
+          ).unwrap();
+          graphics::draw(
+            ctx, &circle, params
+          ).unwrap();
+        }
       }
     }
-    // if cfg!(feature="showDebugMeshes") {
-    //   let collisions = self.world.read_storage::<CollisionComponent>();
-    //   let shooters = self.world.read_storage::<ShooterComponent>();
-    //   let rotations = self.world.read_storage::<RotationComponent>();
+    if cfg!(feature="showDebugMeshes") {
+      let collisions = self.world.read_storage::<CollisionComponent>();
+      let shooters = self.world.read_storage::<ShooterComponent>();
     //   //  draw debug collision circle
-    //   for (collision, position, rotation) in (&collisions, &position_comp, &rotations).join() {
-    //     let params = graphics::DrawParam::new()
-    //       .dest(Point2::new(
-    //         position.x, position.y
-    //       ))
-    //       .rotation(rotation.0)
-    //       .scale(Vector2::new(scale, scale));
-    //     let circle = graphics::Mesh::new_circle(
-    //       ctx,
-    //       graphics::DrawMode::stroke(5.0),
-    //       Point2::new(collision.center.x, collision.center.y),
-    //       collision.radius,
-    //       0.1,
-    //       graphics::Color{
-    //         r: 255.0,
-    //         g: 0.0,
-    //         b: 0.0,
-    //         a: 1.0
-    //       },
-    //     ).unwrap();
-    //     graphics::draw(
-    //       ctx, &circle, params
-    //     ).unwrap();
-    //   }
-    //   //  draw debug shooter origin
-    //   for (shooter, position, rotation) in (&shooters, &position_comp, &rotations).join() {
-    //     let params = graphics::DrawParam::new()
-    //     .dest(Point2::new(
-    //       position.x,
-    //       position.y
-    //     ))
-    //     .rotation(rotation.0)
-    //     .scale(Vector2::new(scale, scale));
-    //     let circle = graphics::Mesh::new_circle(
-    //       ctx,
-    //       graphics::DrawMode::stroke(5.0),
-    //       Point2::new(
-    //         shooter.originOffset.x,
-    //         shooter.originOffset.y
-    //       ),
-    //       5.0,
-    //       0.1,
-    //       graphics::WHITE,
-    //     ).unwrap();
-    //     graphics::draw(
-    //       ctx, &circle, params
-    //     ).unwrap();
-    //   }
-    // }
+      for (collision, position, rotation) in (&collisions, &positions, &rotations).join() {
+        let (cx, cy) = self.camera.world_to_screen_coords(Vec2::new(position.x, position.y));
+        let params = graphics::DrawParam::new()
+          .dest(Point2::new(
+            cx as f32, cy as f32
+          ))
+          .rotation(rotation.0)
+          .scale(Vector2::new(scale, scale));
+        let circle = graphics::Mesh::new_circle(
+          ctx,
+          graphics::DrawMode::stroke(5.0),
+          Point2::new(collision.center.x, collision.center.y),
+          collision.radius,
+          0.1,
+          graphics::Color{
+            r: 255.0,
+            g: 0.0,
+            b: 0.0,
+            a: 1.0
+          },
+        ).unwrap();
+        graphics::draw(
+          ctx, &circle, params
+        ).unwrap();
+      }
+      //  draw debug shooter origin
+      for (shooter, position, rotation) in (&shooters, &positions, &rotations).join() {
+        let (cx, cy) = self.camera.world_to_screen_coords(Vec2::new(position.x, position.y));
+        let params = graphics::DrawParam::new()
+        .dest(Point2::new(
+          cx as f32,
+          cy as f32
+        ))
+        .rotation(rotation.0)
+        .scale(Vector2::new(scale, scale));
+        let circle = graphics::Mesh::new_circle(
+          ctx,
+          graphics::DrawMode::stroke(5.0),
+          Point2::new(
+            shooter.originOffset.x,
+            shooter.originOffset.y
+          ),
+          5.0,
+          0.1,
+          graphics::WHITE,
+        ).unwrap();
+        graphics::draw(
+          ctx, &circle, params
+        ).unwrap();
+      }
+    }
     
 
     let dest_point = Point2::new(1.0, 10.0);

@@ -36,25 +36,6 @@ impl<'a> System<'a> for ControllerSystem {
       } else {
         updater.remove::<ShooterComponent>(entity);
       }
-
-      if controller.movingRight {
-        let angle = rotation.0 - PI / 180.0 * 90.0 ;
-        position.x = position.x - speed * angle.cos();
-        position.y = position.y - speed * angle.sin();
-      }
-      if controller.movingLeft {
-        let angle = rotation.0 - PI / 180.0 * 90.0 ;
-        position.x = position.x + speed * angle.cos();
-        position.y = position.y + speed * angle.sin();
-      }
-      if controller.movingBackward {
-        position.x = position.x - speed * rotation.0.cos();
-        position.y = position.y - speed * rotation.0.sin();
-      }
-      if controller.movingForward {
-        position.x = position.x + speed * rotation.0.cos();
-        position.y = position.y + speed * rotation.0.sin();
-      }
     }
   }
 }
