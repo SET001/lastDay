@@ -119,7 +119,7 @@ impl event::EventHandler for MainState {
     let mut rotations = self.world.write_storage::<RotationComponent>();
     let positions = self.world.write_storage::<Position>();
     for (_controller, rotation, position) in (&controllers, &mut rotations, &positions).join(){
-      let (cx, cy) = self.camera.world_to_screen_coords(Vec2::new(0 as f32, 0 as f32));
+      let (cx, cy) = self.camera.world_to_screen_coords(Vec2::new(position.x as f32, position.y as f32));
       rotation.0 = (_y-cy as f32).atan2(_x-cx as f32);
       println!("{:?}, rotation: {}, mouse: {}, {}, camera: {}, {}", position, rotation.0, _x, _y, cx, cy);
     }
@@ -162,12 +162,12 @@ impl event::EventHandler for MainState {
         position.y += speed * rotation.0.sin();
       }
       if self.controller.movingLeft {
-        let angle = PI;
+        let angle = rotation.0-PI/180.0*90.0;
         position.x += speed * angle.cos();
         position.y -= speed * angle.sin();
       }
       if self.controller.movingRight {
-        let angle: f32 = 0.0;
+        let angle = rotation.0+PI/180.0*90.0;
         position.x += speed * angle.cos();
         position.y -= speed * angle.sin();
       }
