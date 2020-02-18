@@ -21,10 +21,11 @@ impl<'a> System<'a> for ControllerSystem {
     let speed = 4.0;
     for (controller, position, rotation, entity) in (&controllers, &mut positions, &rotations, &entities).join(){
       if controller.isFiring {
+        // println!("spawning shooter in direction {}", rotation.0);
         match shooters.get(entity){
           None => updater.insert(entity, ShooterComponent{
             cooldown: 0,
-            rof: 20,
+            rof: 10,
             speed: 10.0,
             direction: rotation.0,
             originOffset: Point2::new(300.0, 155.0)
