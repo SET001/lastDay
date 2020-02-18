@@ -19,7 +19,7 @@ impl<'a> System<'a> for FollowTarget {
     for (position, rotation, target, entity, ()) in (&positions, &mut rotations, &targets, &entities, !&movements).join() {
       if let Some(targetPosition) = positions.get(target.0) {
         let direction = (targetPosition.y - position.y).atan2(targetPosition.x - position.x);
-        rotation.0 = direction; 
+        rotation.0 = -direction; 
         updater.insert(entity, LinearMovementComponent{
           direction,
           speed: 1.0  //  TODO: do not hardcode speed here
@@ -29,8 +29,8 @@ impl<'a> System<'a> for FollowTarget {
     for (position, rotation, target, movement) in (&positions, &mut rotations, &targets, &mut movements).join() {
       if let Some(targetPosition) = positions.get(target.0) {
         let direction = (targetPosition.y - position.y).atan2(targetPosition.x - position.x);
-        rotation.0 = direction; 
-        movement.direction = direction;
+        rotation.0 = -direction; 
+        movement.direction = -direction;
       }
     }
   }

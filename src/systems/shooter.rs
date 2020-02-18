@@ -22,7 +22,7 @@ impl<'a> System<'a> for ShooterSystem {
         let angle = (shooter.originOffset.y).atan2(shooter.originOffset.x);
         let bulletPosition = Position {
           x: position.x+dist*(rotation.0+angle).cos()*scale,
-          y: position.y+dist*(rotation.0+angle).sin()*scale
+          y: position.y-dist*(rotation.0+angle).sin()*scale
         };
         updater.insert(bullet, bulletPosition);
         updater.insert(bullet, RotationComponent(0.0));

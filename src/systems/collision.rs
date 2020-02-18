@@ -20,7 +20,7 @@ fn getPoint(position: &Point2<f32>, offset: &Point2<f32>, rotation: f32, scale: 
 
   Point2::new(
     position.x+dist*(rotation+angle).cos()*scale,
-    position.y+dist*(rotation+angle).sin()*scale
+    position.y-dist*(rotation+angle).sin()*scale
   )
 }
 

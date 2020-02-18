@@ -20,7 +20,7 @@ fn spawn<'a>(
 
   updater.insert(zombie, Position {
     x: position.x + spawner.radius*angle.cos(),
-    y: position.y + spawner.radius*angle.sin()
+    y: position.y - spawner.radius*angle.sin()
   });
   updater.insert(zombie, RotationComponent(rng.gen_range(-PI, PI)));
   updater.insert(zombie, ViewComponent::new (Views::Zombie));

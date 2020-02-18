@@ -13,7 +13,7 @@ impl<'a> System<'a> for LinearMovement {
     use specs::Join;
     for (position, movement) in (&mut position, &movement).join() {
       position.x += movement.speed*movement.direction.cos();
-      position.y += movement.speed*movement.direction.sin();
+      position.y -= movement.speed*movement.direction.sin();
     }
   }
 }
