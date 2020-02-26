@@ -6,6 +6,7 @@ pub enum Views{
   Human,
   Zombie,
   Bullet,
+  Background
 }
 
 #[derive(Component)]

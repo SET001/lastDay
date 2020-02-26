@@ -34,6 +34,9 @@ impl MainState{
 		let mut world = World::new();
 
     world.register::<ViewComponent>();
+    world.register::<CollisionComponent>();
+    world.register::<RotationComponent>();
+    world.register::<Position>();
 
     let mut dispatcher = DispatcherBuilder::new()
       .with(ControllerSystem, "ControllerSystem", &[])
@@ -50,29 +53,36 @@ impl MainState{
     dispatcher.setup(&mut world);
 
     world.create_entity()
-    .with(Position{x: 0.0, y: 0.0})
-    .with(ZombieSpawnerComponent{
-      radius: 300.0,
-      spawnRate: dotenv!("zombieSpawner.spawnRate").parse::<f32>().unwrap(),
-      cooldown: 0.0,
-      spawnInitially: dotenv!("zombieSpawner.spawnInitially").parse::<isize>().unwrap(),
-      initiallySpawned: false
-    })
-    .build();
+      .with(Position{x: -100.0, y: 0.0})
+      .with(RotationComponent(0.0))
+      .with(ViewComponent::new (Views::Background))
+      .build();
+  
 
-  world.create_entity()
-    .with(Position{x: 0.0, y: 0.0})
-    .with(RotationComponent(0.0))
-    .with(ViewComponent::new (Views::Human))
-    .with(FractionableComponent(Fractions::Humans))
-    .with(ControllerComponent{
-      movingLeft: false,
-      movingRight: false,
-      movingForward: false,
-      movingBackward: false,
-      isFiring: false,
-    })
-    .build();
+    world.create_entity()
+      .with(Position{x: 0.0, y: 0.0})
+      .with(ZombieSpawnerComponent{
+        radius: 300.0,
+        spawnRate: dotenv!("zombieSpawner.spawnRate").parse::<f32>().unwrap(),
+        cooldown: 0.0,
+        spawnInitially: dotenv!("zombieSpawner.spawnInitially").parse::<isize>().unwrap(),
+        initiallySpawned: false
+      })
+      .build();
+
+    world.create_entity()
+      .with(Position{x: 0.0, y: 0.0})
+      .with(RotationComponent(0.0))
+      .with(ViewComponent::new (Views::Human))
+      .with(FractionableComponent(Fractions::Humans))
+      .with(ControllerComponent{
+        movingLeft: false,
+        movingRight: false,
+        movingForward: false,
+        movingBackward: false,
+        isFiring: false,
+      })
+      .build();
     
     let camera = Camera::new(WINDOW_WIDTH, WINDOW_HEIGHT, CAMERA_WIDTH, CAMERA_HEIGHT);
 
@@ -205,6 +215,21 @@ impl event::EventHandler for MainState {
               graphics::WHITE,
             ).unwrap();
             view.meshes.push(Box::new(circle));
+          },
+          Views::Background => {
+            let image = graphics::Image::new(ctx, "/grass.png").unwrap();
+            let mut batch = graphics::spritebatch::SpriteBatch::new(image);
+            
+            let (cx, cy) = self.camera.world_to_screen_coords(Vec2::new(0.0, 0.0));
+            let grassSize = 10;
+            for j in -grassSize..grassSize {
+              for i in -grassSize..grassSize {
+                let p = graphics::DrawParam::new().dest(Point2::new((cx+i*415) as f32,(cy+j*415) as f32));
+                batch.add(p);
+              }
+            }
+            view.meshes.push(Box::new(batch));
+            // graphics::draw(ctx, &batch, param)?;
           }
         }
       }
@@ -223,6 +248,8 @@ impl event::EventHandler for MainState {
    
     graphics::clear(ctx, graphics::BLACK);
     let scale = 0.3;
+    
+
     for (view, position, rotation) in (&view_comp, &positions, &rotations).join() {
       let (cx, cy) = self.camera.world_to_screen_coords(Vec2::new(position.x, position.y));
       // println!("Position {:?}, translated to camera coordinates {:?}", position, (cx, cy));
@@ -230,7 +257,7 @@ impl event::EventHandler for MainState {
         .rotation(rotation.0)
         .dest(Point2::new(cx as f32, cy as f32))
         .scale(Vector2::new(scale, scale));
-        //.offset(Point2::new(0.25, 0.5));    //  todo remove this
+        // .offset(Point2::new(0.25, 0.5));    //  todo remove this
       for mesh in &view.meshes{
         mesh.draw(ctx, params).unwrap();
         if cfg!(feature="showDebugMeshes")  {
