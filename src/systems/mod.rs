@@ -8,6 +8,7 @@ mod outOfScreenRemover;
 mod damageOnCollide;
 mod targetOnFraction;
 mod followTarget;
+mod init;
 
 pub use self::linearMovement::LinearMovement;
 pub use self::controller::*;
@@ -18,3 +19,4 @@ pub use self::outOfScreenRemover::*;
 pub use self::damageOnCollide::*;
 pub use self::targetOnFraction::*;
 pub use self::followTarget::*;
+pub use self::init::*;

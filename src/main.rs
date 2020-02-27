@@ -13,6 +13,7 @@ use std::env;
 mod state;
 mod components;
 mod systems;
+mod prefab;
 
 use crate::state::MainState;
 

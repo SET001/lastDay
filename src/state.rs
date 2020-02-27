@@ -1,4 +1,4 @@
-use specs::{Builder, World, WorldExt, Dispatcher, DispatcherBuilder };
+use specs::{Builder, World, WorldExt, Dispatcher, DispatcherBuilder, RunNow};
 use ggez::{GameResult, Context};
 use ggez::event::{self, KeyCode, KeyMods, MouseButton};
 use ggez::timer;
@@ -12,6 +12,8 @@ use ggez_goodies::camera::*;
 
 use crate::components::*;
 use crate::systems::*;
+
+use crate::prefab::*;
 
 const WINDOW_WIDTH: u32 = 1500;
 const WINDOW_HEIGHT: u32 = 700;
@@ -32,6 +34,7 @@ impl MainState{
 	pub fn new(font: graphics::Font) -> MainState{
     dotenv().ok();
 		let mut world = World::new();
+    
 
     world.register::<ViewComponent>();
     world.register::<CollisionComponent>();
@@ -50,40 +53,11 @@ impl MainState{
       .with(FollowTarget, "FollowTarget", &[])
       .build();
     
-    dispatcher.setup(&mut world);
-
-    world.create_entity()
-      .with(Position{x: -100.0, y: 0.0})
-      .with(RotationComponent(0.0))
-      .with(ViewComponent::new (Views::Background))
-      .build();
-  
-
-    world.create_entity()
-      .with(Position{x: 0.0, y: 0.0})
-      .with(ZombieSpawnerComponent{
-        radius: 300.0,
-        spawnRate: dotenv!("zombieSpawner.spawnRate").parse::<f32>().unwrap(),
-        cooldown: 0.0,
-        spawnInitially: dotenv!("zombieSpawner.spawnInitially").parse::<isize>().unwrap(),
-        initiallySpawned: false
-      })
-      .build();
-
-    world.create_entity()
-      .with(Position{x: 0.0, y: 0.0})
-      .with(RotationComponent(0.0))
-      .with(ViewComponent::new (Views::Human))
-      .with(FractionableComponent(Fractions::Humans))
-      .with(ControllerComponent{
-        movingLeft: false,
-        movingRight: false,
-        movingForward: false,
-        movingBackward: false,
-        isFiring: false,
-      })
-      .build();
+    let mut init = InitSystem;
+    init.run_now(&world);
     
+    dispatcher.setup(&mut world);
+ 
     let camera = Camera::new(WINDOW_WIDTH, WINDOW_HEIGHT, CAMERA_WIDTH, CAMERA_HEIGHT);
 
 
